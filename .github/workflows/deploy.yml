@@ -1,31 +1,49 @@
-name: Deploy Vite app to GitHub Pages
+name: Deploy
 
 on:
   push:
     branches:
-      - main  # Ветка, из которой будет происходить деплой, обычно это main.
+      - main
 
 jobs:
-  build-and-deploy:
+  build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16' # Версия Node.js. Убедитесь, что она совместима с Vite.
+      - name: Setup Node
+        uses: actions/setup-node@v4
 
       - name: Install dependencies
-        run: npm install
+        uses: bahmutov/npm-install@v1
 
-      - name: Build the Vite app
+      - name: Build project
         run: npm run build
+
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-files
+          path: ./dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-files
+          path: ./dist
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist # Папка с готовым билдом, созданная Vite (по умолчанию dist)
+          publish_dir: ./dist
