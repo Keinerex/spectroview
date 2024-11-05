@@ -8,11 +8,12 @@ interface SearchProps {
 
 export const Search = ({ setSearchResult }: SearchProps) => {
 
-  const [searchValue, setSearchValue] = useState<number>(0);
+  const [searchValue, setSearchValue] = useState<number | undefined>(0);
   const debouncedSearchValue = useDebounce(searchValue, 500)
 
   const handleInput = (event: ChangeEvent<HTMLInputElement>) => {
-    if (Number(event.target.value)) setSearchValue(Number(event.target.value))
+    if (Number.parseFloat(event.target.value)) setSearchValue(Number.parseFloat(event.target.value));
+    else setSearchValue(0)
   }
   useEffect(() => {
     if (debouncedSearchValue) {
@@ -29,7 +30,7 @@ export const Search = ({ setSearchResult }: SearchProps) => {
 
   return (
     <label className="input input-bordered flex items-center gap-2">
-      <input type="number" min={0} max={5000} value={searchValue} onInput={handleInput} className="grow"
+      <input value={searchValue} onInput={handleInput} className="grow w-56"
              placeholder="Search"/>
       <svg
         xmlns="http://www.w3.org/2000/svg"
